@@ -20,7 +20,18 @@ import { useCardioStore } from '../../store/useCardioStore';
         
         if (goalType === 'weight_loss' && weightLossProfile) {
           // Use specialized weight loss AI
-          console.log('🤖 Using specialized Weight Loss AI with GPT-5-mini');
+          console.log('🤖 Using specialized Weight Loss AI with GPT-4o');
+          console.log('🤖 Weight loss profile:', {
+            currentWeight: weightLossProfile.currentWeight,
+            targetWeight: weightLossProfile.targetWeight,
+            dailyCalorieTarget: weightLossProfile.dailyCalorieTarget
+          });
+          console.log('🤖 Today data:', {
+            totalCalories: getTodayCalories(),
+            remainingCalories: weightLossProfile.dailyCalorieTarget - getTodayCalories(),
+            mealsCount: getTodayMeals().length
+          });
+          
           response = await weightLossAI.handleWeightLossQuery({
             userMessage: message,
             userProfile: {

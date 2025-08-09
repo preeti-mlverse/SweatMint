@@ -44,7 +44,7 @@ export class WeightLossAI {
     this.config = {
       apiKey: import.meta.env.VITE_OPENAI_API_KEY || '',
       baseUrl: 'https://api.openai.com/v1',
-      model: 'gpt-5-mini',
+      model: 'gpt-4o',
       ...config
     };
     this.isConfigured = !!(this.config.apiKey && 
@@ -52,8 +52,9 @@ export class WeightLossAI {
       this.config.apiKey.length > 20);
     
     if (this.isConfigured) {
-      console.log('✅ WeightLossAI: OpenAI GPT-5-mini configured successfully');
+      console.log('✅ WeightLossAI: OpenAI GPT-4o configured successfully');
       console.log('🔑 WeightLossAI: API key length:', this.config.apiKey.length);
+      console.log('🔑 WeightLossAI: API key starts with:', this.config.apiKey.substring(0, 10));
     } else {
       console.warn('⚠️ WeightLossAI: OpenAI API key not found or invalid - using fallback responses');
       console.log('🔑 WeightLossAI: API key value:', this.config.apiKey?.substring(0, 10) + '...');
@@ -70,23 +71,31 @@ export class WeightLossAI {
   }
 
   async handleWeightLossQuery(request: WeightLossRequest): Promise<WeightLossAIResponse> {
+    console.log('🤖 WeightLossAI: handleWeightLossQuery called');
+    console.log('🤖 WeightLossAI: isReady():', this.isReady());
+    console.log('🤖 WeightLossAI: User message:', request.userMessage);
+    
     if (!this.isReady()) {
       console.log('🤖 WeightLossAI: API key not configured, using fallback');
       return this.getFallbackResponse(request);
     }
 
-    console.log('🤖 WeightLossAI: Using GPT-5-mini for query:', request.userMessage);
+    console.log('🤖 WeightLossAI: Using GPT-4o for query:', request.userMessage);
 
     try {
       const systemPrompt = this.getSystemPrompt();
       const userPrompt = this.createUserPrompt(request);
       
-      console.log('🤖 WeightLossAI: Calling GPT-5-mini...');
-      const response = await this.callGPT5Mini(systemPrompt, userPrompt);
-      console.log('🤖 WeightLossAI: GPT-5-mini response received');
+      console.log('🤖 WeightLossAI: System prompt length:', systemPrompt.length);
+      console.log('🤖 WeightLossAI: User prompt length:', userPrompt.length);
+      console.log('🤖 WeightLossAI: Calling GPT-4o...');
+      
+      const response = await this.callGPT4o(systemPrompt, userPrompt);
+      console.log('🤖 WeightLossAI: GPT-4o response received:', response.substring(0, 100) + '...');
       return this.parseResponse(response);
     } catch (error) {
-      console.error('Weight Loss AI failed:', error);
+      console.error('🚨 WeightLossAI: GPT-4o API call failed:', error);
+      console.log('🔄 WeightLossAI: Falling back to static responses');
       return this.getFallbackResponse(request);
     }
   }
@@ -190,14 +199,41 @@ ${conversationHistory.slice(-4).map(msg => `${msg.role}: ${msg.content}`).join('
 Please provide a helpful, personalized response following the system instructions above.`;
   }
 
-  private async callGPT5Mini(systemPrompt: string, userPrompt: string): Promise<string> {
+  private async callGPT4o(systemPrompt: string, userPrompt: string): Promise<string> {
     const apiKey = this.config.apiKey;
+    
+    console.log('🔑 API Key check:', {
+      hasKey: !!apiKey,
+      keyLength: apiKey?.length,
+      keyStart: apiKey?.substring(0, 10),
+      isPlaceholder: apiKey === 'your_openai_api_key_here'
+    });
     
     if (!apiKey || apiKey === 'your_openai_api_key_here') {
       throw new Error('OpenAI API key not configured');
     }
     
-    console.log('🤖 Making API call to OpenAI GPT-5-mini...');
+    console.log('🤖 Making API call to OpenAI GPT-4o...');
+    console.log('🌐 API URL:', `${this.config.baseUrl}/chat/completions`);
+    console.log('🤖 Model:', this.config.model);
+    
+    const requestBody = {
+      model: this.config.model,
+      messages: [
+        {
+          role: 'system',
+          content: systemPrompt
+        },
+        {
+          role: 'user',
+          content: userPrompt
+        }
+      ],
+      max_tokens: 800,
+      temperature: 0.7,
+    };
+    
+    console.log('📤 Request body:', JSON.stringify(requestBody, null, 2));
     
     const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
       method: 'POST',
@@ -205,26 +241,19 @@ Please provide a helpful, personalized response following the system instruction
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({
-        model: 'gpt-5-mini',
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt
-          },
-          {
-            role: 'user',
-            content: userPrompt
-          }
-        ],
-        max_tokens: 800,
-        temperature: 0.7,
-      }),
+      body: JSON.stringify(requestBody),
     });
+
+    console.log('📥 Response status:', response.status);
+    console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('🤖 OpenAI API Error:', response.status, errorText);
+      console.error('🚨 OpenAI API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorText: errorText
+      });
       let errorMessage = `OpenAI API call failed (${response.status}): ${response.statusText}`;
       
       try {
@@ -232,6 +261,7 @@ Please provide a helpful, personalized response following the system instruction
         if (errorData.error?.message) {
           errorMessage += ` - ${errorData.error.message}`;
         }
+        console.error('🚨 Parsed error data:', errorData);
       } catch (e) {
         // If we can't parse the error, just use the status text
       }
@@ -240,7 +270,13 @@ Please provide a helpful, personalized response following the system instruction
     }
 
     const data = await response.json();
-    console.log('🤖 OpenAI GPT-5-mini Success:', data.choices[0]?.message?.content?.substring(0, 100) + '...');
+    console.log('✅ OpenAI GPT-4o Success:', {
+      hasChoices: !!data.choices,
+      choicesLength: data.choices?.length,
+      hasContent: !!data.choices?.[0]?.message?.content,
+      contentPreview: data.choices?.[0]?.message?.content?.substring(0, 100) + '...'
+    });
+    console.log('📄 Full response data:', data);
     return data.choices[0]?.message?.content || '';
   }
 
