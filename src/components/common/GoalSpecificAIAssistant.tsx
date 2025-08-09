@@ -55,7 +55,11 @@
 +            }))
 +          });
 +        } else {
-+          // Use general goal-specific AI for other goals
++          // Use general goal-specific AI        }
+      }
+    }
+    )
+ for other goals
 +          response = await goalSpecificAI.handleGoalSpecificQuery({
 +            goalType,
 +            userMessage: message,
