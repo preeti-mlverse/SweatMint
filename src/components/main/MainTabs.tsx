@@ -47,18 +47,3 @@ export const MainTabs: React.FC<MainTabsProps> = ({ activeTab, onTabChange }) =>
     </div>
   );
 };
-
-                isActive 
-                  ? 'text-[#58A6FF]' 
-                  : 'text-[#7D8590] hover:text-[#F0F6FC]'
-              }`}
-            >
-              <Icon size={20} />
-              <span className="text-xs mt-1 font-medium">{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
