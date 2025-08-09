@@ -24,8 +24,6 @@ import { TodayTab } from './components/main/TodayTab';
 import { ProgressTab } from './components/main/ProgressTab';
 import { PlanTab } from './components/main/PlanTab';
 import { ProfileTab } from './components/main/ProfileTab';
-import { ShopTab } from './components/main/ShopTab';
-import { CommunityTab } from './components/main/CommunityTab';
 
 // Types
 import { GoalType, UserProfile, Goal } from './types';
@@ -81,12 +79,6 @@ function App() {
   const [pendingSleepDevices, setPendingSleepDevices] = useState<ConnectedSleepDevice[]>([]);
   const [pendingStepsDevices, setPendingStepsDevices] = useState<ConnectedStepsDevice[]>([]);
 
-  // Initialize sample achievements and AI recommendations
-  useEffect(() => {
-    // Sample achievements would be loaded here
-    // Sample AI recommendations would be generated here
-  }, []);
-
   const handleGetStarted = () => {
     setCurrentScreen('phone');
   };
@@ -100,7 +92,6 @@ function App() {
   };
 
   const handleProfileComplete = (profileData: any) => {
-    // Create user profile with all required data
     const profile: UserProfile = {
       id: Date.now().toString(),
       weight: profileData.weight,
@@ -117,17 +108,14 @@ function App() {
   };
 
   const handleGoalsSelected = (selectedGoals: GoalType[]) => {
-    // Filter out goals that already exist
     const existingGoalTypes = goals.map(goal => goal.type);
     const newGoals = selectedGoals.filter(goalType => !existingGoalTypes.includes(goalType));
     
-    // If no new goals to add, just go back to main
     if (newGoals.length === 0) {
       setCurrentScreen('main');
       return;
     }
 
-    // Update user profile with new goals
     if (userProfile) {
       setUserProfile({
         ...userProfile,
@@ -144,19 +132,16 @@ function App() {
       setUserProfile(profile);
     }
 
-    // Check if weight loss is selected first (priority)
     if (newGoals.includes('weight_loss')) {
       setCurrentScreen('goal-setup');
       return;
     }
     
-    // Check if cardio endurance is selected
     if (newGoals.includes('cardio_endurance')) {
       setCurrentScreen('goal-setup');
       return;
     }
 
-    // For other goals, create them directly and go to main
     newGoals.forEach((goalType, index) => {
       const goalData = getGoalData(goalType);
       const goal: Goal = {
@@ -166,7 +151,7 @@ function App() {
         description: goalData.description,
         icon: goalData.icon,
         targetValue: goalData.defaultTarget,
-        targetTimeframe: 12, // 12 weeks
+        targetTimeframe: 12,
         currentValue: 0,
         isActive: true,
         createdAt: new Date()
@@ -178,158 +163,14 @@ function App() {
     setCurrentScreen('main');
   };
 
-  const handleCardioDevicesPaired = (devices: ConnectedDevice[]) => {
-    setPendingCardioDevices(devices);
-    // Continue to cardio setup with devices
-    // The step will be handled in goal-setup screen
-  };
-
-  const handleCardioSetupComplete = (profile: CardioProfile) => {
-    setCardioProfile(profile);
-    
-    // Create the cardio endurance goal
-    const goal: Goal = {
-      id: profile.goalId,
-      type: 'cardio_endurance',
-      title: 'Cardio Endurance',
-      description: `Improve cardiovascular fitness with ${profile.fitnessObjective.replace('_', ' ')} focus`,
-      icon: 'heart',
-      targetValue: profile.fitnessObjective === 'fat_burn' ? 150 : 
-                   profile.fitnessObjective === 'endurance' ? 180 : 200, // Target minutes per week
-      targetTimeframe: 12,
-      currentValue: 0,
-      isActive: true,
-      createdAt: new Date()
-    };
-    
-    addGoal(goal);
-
-    // Add other selected goals (excluding cardio_endurance since we just added it)
-    const otherGoals = userProfile?.selectedGoals.filter(goalType => goalType !== 'cardio_endurance') || [];
-    otherGoals.forEach((goalType, index) => {
-      const goalData = getGoalData(goalType);
-      const otherGoal: Goal = {
-        id: `goal_${Date.now()}_${index + 1}`,
-        type: goalType,
-        title: goalData.title,
-        description: goalData.description,
-        icon: goalData.icon,
-        targetValue: goalData.defaultTarget,
-        targetTimeframe: 12, // 12 weeks
-        currentValue: 0,
-        isActive: true,
-        createdAt: new Date()
-      };
-      
-      addGoal(otherGoal);
-    });
-
-    setCurrentScreen('main');
-  };
-
-  const handleStrengthEquipmentSelected = (equipment: EquipmentType[]) => {
-    setPendingStrengthEquipment(equipment);
-    // Continue to strength setup with equipment
-  };
-
-  const handleStrengthSetupComplete = (profile: StrengthProfile) => {
-    setStrengthProfile(profile);
-    
-    // Create the strength building goal
-    const goal: Goal = {
-      id: profile.goalId,
-      type: 'strength_building',
-      title: 'Strength Building',
-      description: `Build ${profile.primaryGoal.replace('_', ' ')} with ${profile.workoutFrequency}x/week training`,
-      icon: 'dumbbell',
-      targetValue: profile.workoutFrequency * 4, // Target sessions per month
-      targetTimeframe: 12,
-      currentValue: 0,
-      isActive: true,
-      createdAt: new Date()
-    };
-    
-    addGoal(goal);
-
-    // Add other selected goals (excluding strength_building since we just added it)
-    const otherGoals = userProfile?.selectedGoals.filter(goalType => goalType !== 'strength_building') || [];
-    otherGoals.forEach((goalType, index) => {
-      const goalData = getGoalData(goalType);
-      const otherGoal: Goal = {
-        id: `goal_${Date.now()}_${index + 1}`,
-        type: goalType,
-        title: goalData.title,
-        description: goalData.description,
-        icon: goalData.icon,
-        targetValue: goalData.defaultTarget,
-        targetTimeframe: 12, // 12 weeks
-        currentValue: 0,
-        isActive: true,
-        createdAt: new Date()
-      };
-      
-      addGoal(otherGoal);
-    });
-
-    setCurrentScreen('main');
-  };
-
-  const handleSleepDevicesPaired = (devices: ConnectedSleepDevice[]) => {
-    setPendingSleepDevices(devices);
-    // Continue to sleep setup with devices
-  };
-
-  const handleSleepSetupComplete = (profile: SleepProfile) => {
-    setSleepProfile(profile);
-    
-    // Create the sleep tracking goal
-    const goal: Goal = {
-      id: profile.goalId,
-      type: 'sleep_tracking',
-      title: 'Sleep Tracking',
-      description: `Improve sleep quality with ${profile.targetSleepHours}h target`,
-      icon: 'moon',
-      targetValue: profile.targetSleepHours,
-      targetTimeframe: 12,
-      currentValue: 0,
-      isActive: true,
-      createdAt: new Date()
-    };
-    
-    addGoal(goal);
-
-    // Add other selected goals (excluding sleep_tracking since we just added it)
-    const otherGoals = userProfile?.selectedGoals.filter(goalType => goalType !== 'sleep_tracking') || [];
-    otherGoals.forEach((goalType, index) => {
-      const goalData = getGoalData(goalType);
-      const otherGoal: Goal = {
-        id: `goal_${Date.now()}_${index + 1}`,
-        type: goalType,
-        title: goalData.title,
-        description: goalData.description,
-        icon: goalData.icon,
-        targetValue: goalData.defaultTarget,
-        targetTimeframe: 12, // 12 weeks
-        currentValue: 0,
-        isActive: true,
-        createdAt: new Date()
-      };
-      
-      addGoal(otherGoal);
-    });
-
-    setCurrentScreen('main');
-  };
-
   const handleWeightLossSetupComplete = (profile: WeightLossProfile) => {
     setWeightLossProfile(profile);
     
-    // Create the weight loss goal
     const goal: Goal = {
       id: profile.goalId,
       type: 'weight_loss',
       title: 'Weight Loss',
-      description: `Lose ${profile.currentWeight - profile.targetWeight}kg in ${Math.ceil((Date.now() - profile.createdAt.getTime()) / (7 * 24 * 60 * 60 * 1000))} weeks`,
+      description: `Lose ${profile.currentWeight - profile.targetWeight}kg`,
       icon: 'target',
       targetValue: profile.targetWeight,
       targetTimeframe: 12,
@@ -339,63 +180,88 @@ function App() {
     };
     
     addGoal(goal);
+    setCurrentScreen('main');
+  };
 
-    // Check if cardio endurance is also selected
-    const hasCardioGoal = userProfile?.selectedGoals.includes('cardio_endurance');
-    const hasSleepGoal = userProfile?.selectedGoals.includes('sleep_tracking');
+  const handleCardioDevicesPaired = (devices: ConnectedDevice[]) => {
+    setPendingCardioDevices(devices);
+  };
+
+  const handleCardioSetupComplete = (profile: CardioProfile) => {
+    setCardioProfile(profile);
     
-    if (hasCardioGoal && !cardioProfile) {
-      // Update user profile with new goals
-      if (userProfile) {
-        setUserProfile({
-          ...userProfile,
-          selectedGoals: userProfile.selectedGoals
-        });
-      }
-      
-      setCurrentScreen('goal-setup');
-      return;
-    }
+    const goal: Goal = {
+      id: profile.goalId,
+      type: 'cardio_endurance',
+      title: 'Cardio Endurance',
+      description: `Improve cardiovascular fitness`,
+      icon: 'heart',
+      targetValue: 150,
+      targetTimeframe: 12,
+      currentValue: 0,
+      isActive: true,
+      createdAt: new Date()
+    };
     
-    if (hasSleepGoal && !sleepProfile) {
-      setCurrentScreen('goal-setup');
-      return;
-    }
+    addGoal(goal);
+    setCurrentScreen('main');
+  };
 
-    // Add other selected goals (excluding weight_loss and cardio_endurance)
-    const otherGoals = userProfile?.selectedGoals.filter(goalType => 
-      goalType !== 'weight_loss' && goalType !== 'cardio_endurance' && goalType !== 'sleep_tracking'
-    ) || [];
-    otherGoals.forEach((goalType, index) => {
-      const goalData = getGoalData(goalType);
-      const otherGoal: Goal = {
-        id: `goal_${Date.now()}_${index + 1}`,
-        type: goalType,
-        title: goalData.title,
-        description: goalData.description,
-        icon: goalData.icon,
-        targetValue: goalData.defaultTarget,
-        targetTimeframe: 12, // 12 weeks
-        currentValue: 0,
-        isActive: true,
-        createdAt: new Date()
-      };
-      
-      addGoal(otherGoal);
-    });
+  const handleStrengthEquipmentSelected = (equipment: EquipmentType[]) => {
+    setPendingStrengthEquipment(equipment);
+  };
 
+  const handleStrengthSetupComplete = (profile: StrengthProfile) => {
+    setStrengthProfile(profile);
+    
+    const goal: Goal = {
+      id: profile.goalId,
+      type: 'strength_building',
+      title: 'Strength Building',
+      description: `Build strength with training`,
+      icon: 'dumbbell',
+      targetValue: 12,
+      targetTimeframe: 12,
+      currentValue: 0,
+      isActive: true,
+      createdAt: new Date()
+    };
+    
+    addGoal(goal);
+    setCurrentScreen('main');
+  };
+
+  const handleSleepDevicesPaired = (devices: ConnectedSleepDevice[]) => {
+    setPendingSleepDevices(devices);
+  };
+
+  const handleSleepSetupComplete = (profile: SleepProfile) => {
+    setSleepProfile(profile);
+    
+    const goal: Goal = {
+      id: profile.goalId,
+      type: 'sleep_tracking',
+      title: 'Sleep Tracking',
+      description: `Improve sleep quality`,
+      icon: 'moon',
+      targetValue: profile.targetSleepHours,
+      targetTimeframe: 12,
+      currentValue: 0,
+      isActive: true,
+      createdAt: new Date()
+    };
+    
+    addGoal(goal);
     setCurrentScreen('main');
   };
 
   const handleStepsDevicesPaired = (devices: ConnectedStepsDevice[]) => {
     setPendingStepsDevices(devices);
-    // Continue to steps setup with devices
   };
 
   const handleStepsSetupComplete = (profile: StepsProfile) => {
     setStepsProfile(profile);
     
-    // Create the daily steps goal
     const goal: Goal = {
       id: profile.goalId,
       type: 'daily_steps',
@@ -410,32 +276,10 @@ function App() {
     };
     
     addGoal(goal);
-
-    // Add other selected goals (excluding daily_steps since we just added it)
-    const otherGoals = userProfile?.selectedGoals.filter(goalType => goalType !== 'daily_steps') || [];
-    otherGoals.forEach((goalType, index) => {
-      const goalData = getGoalData(goalType);
-      const otherGoal: Goal = {
-        id: `goal_${Date.now()}_${index + 1}`,
-        type: goalType,
-        title: goalData.title,
-        description: goalData.description,
-        icon: goalData.icon,
-        targetValue: goalData.defaultTarget,
-        targetTimeframe: 12, // 12 weeks
-        currentValue: 0,
-        isActive: true,
-        createdAt: new Date()
-      };
-      
-      addGoal(otherGoal);
-    });
-
     setCurrentScreen('main');
   };
 
   const renderGoalSetup = () => {
-    // Priority: Weight Loss first
     const needsWeightLossSetup = userProfile?.selectedGoals.includes('weight_loss') && !weightLossProfile;
     if (needsWeightLossSetup) {
       return (
@@ -446,10 +290,8 @@ function App() {
       );
     }
 
-    // Then: Cardio Endurance
     const needsCardioSetup = userProfile?.selectedGoals.includes('cardio_endurance') && !cardioProfile;
     if (needsCardioSetup) {
-      // Check if we need device pairing first
       if (pendingCardioDevices.length === 0) {
         return (
           <DevicePairingScreen
@@ -468,10 +310,8 @@ function App() {
       }
     }
     
-    // Then: Strength Building
     const needsStrengthSetup = userProfile?.selectedGoals.includes('strength_building') && !strengthProfile;
     if (needsStrengthSetup) {
-      // Check if we need equipment selection first
       if (pendingStrengthEquipment.length === 0) {
         return (
           <StrengthDevicePairingScreen
@@ -490,10 +330,8 @@ function App() {
       }
     }
     
-    // Then: Sleep Tracking
     const needsSleepSetup = userProfile?.selectedGoals.includes('sleep_tracking') && !sleepProfile;
     if (needsSleepSetup) {
-      // Check if we need device pairing first
       if (pendingSleepDevices.length === 0) {
         return (
           <SleepDevicePairingScreen
@@ -512,10 +350,8 @@ function App() {
       }
     }
     
-    // Then: Daily Steps
     const needsStepsSetup = userProfile?.selectedGoals.includes('daily_steps') && !stepsProfile;
     if (needsStepsSetup) {
-      // Check if we need device pairing first
       if (pendingStepsDevices.length === 0) {
         return (
           <StepsDevicePairingScreen
@@ -534,7 +370,6 @@ function App() {
       }
     }
 
-    // If no setup needed, go to main
     setCurrentScreen('main');
     return null;
   };
@@ -551,25 +386,25 @@ function App() {
         title: 'Cardio Endurance',
         description: 'Build cardiovascular fitness',
         icon: 'heart',
-        defaultTarget: 150 // minutes per week
+        defaultTarget: 150
       },
       strength_building: {
         title: 'Strength Building',
         description: 'Increase muscle strength',
         icon: 'dumbbell',
-        defaultTarget: 12 // sessions per month (3x/week)
+        defaultTarget: 12
       },
       daily_steps: {
         title: 'Daily Steps',
         description: 'Stay active with daily step goals',
         icon: 'footprints',
-        defaultTarget: 10000 // steps per day
+        defaultTarget: 10000
       },
       sleep_tracking: {
         title: 'Sleep Tracking',
         description: 'Improve sleep quality',
         icon: 'moon',
-        defaultTarget: 8 // hours
+        defaultTarget: 8
       }
     };
 
@@ -619,10 +454,6 @@ function App() {
         return <ProgressTab />;
       case 'plan':
         return <PlanTab />;
-      case 'shop':
-        return <ShopTab />;
-      case 'community':
-        return <CommunityTab />;
       case 'profile':
         return <ProfileTab />;
       default:

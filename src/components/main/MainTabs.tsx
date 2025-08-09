@@ -1,3 +1,4 @@
+import React from 'react';
 import { Home, TrendingUp, Calendar, User } from 'lucide-react';
 import { MainTab } from '../../types';
 
