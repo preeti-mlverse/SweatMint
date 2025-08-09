@@ -42,6 +42,4 @@ export interface Club {
 }
 
 export interface Goal {
-
-export type AppScreen = 'welcome' | 'profile' | 'user-details' | 'goals' | 'goal-setup' | 'main';
-export type MainTab = 'today' | 'progress' | 'plan' | 'shop' | 'community' | 'profile';
+}
