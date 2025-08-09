@@ -44,7 +44,7 @@ export class WeightLossAI {
     this.config = {
       apiKey: import.meta.env.VITE_OPENAI_API_KEY || '',
       baseUrl: 'https://api.openai.com/v1',
-      model: 'gpt-4o',
+      model: 'gpt-5-mini',
       ...config
     };
     this.isConfigured = !!(this.config.apiKey && 
@@ -52,7 +52,7 @@ export class WeightLossAI {
       this.config.apiKey.length > 20);
     
     if (this.isConfigured) {
-      console.log('✅ WeightLossAI: OpenAI GPT-4o configured successfully');
+      console.log('✅ WeightLossAI: OpenAI GPT-5-mini configured successfully');
       console.log('🔑 WeightLossAI: API key length:', this.config.apiKey.length);
     } else {
       console.warn('⚠️ WeightLossAI: OpenAI API key not found or invalid - using fallback responses');
@@ -75,15 +75,15 @@ export class WeightLossAI {
       return this.getFallbackResponse(request);
     }
 
-    console.log('🤖 WeightLossAI: Using GPT-4o for query:', request.userMessage);
+    console.log('🤖 WeightLossAI: Using GPT-5-mini for query:', request.userMessage);
 
     try {
       const systemPrompt = this.getSystemPrompt();
       const userPrompt = this.createUserPrompt(request);
       
-      console.log('🤖 WeightLossAI: Calling GPT-4o...');
-      const response = await this.callGPT4o(systemPrompt, userPrompt);
-      console.log('🤖 WeightLossAI: GPT-4o response received');
+      console.log('🤖 WeightLossAI: Calling GPT-5-mini...');
+      const response = await this.callGPT5Mini(systemPrompt, userPrompt);
+      console.log('🤖 WeightLossAI: GPT-5-mini response received');
       return this.parseResponse(response);
     } catch (error) {
       console.error('Weight Loss AI failed:', error);
@@ -190,14 +190,14 @@ ${conversationHistory.slice(-4).map(msg => `${msg.role}: ${msg.content}`).join('
 Please provide a helpful, personalized response following the system instructions above.`;
   }
 
-  private async callGPT4o(systemPrompt: string, userPrompt: string): Promise<string> {
+  private async callGPT5Mini(systemPrompt: string, userPrompt: string): Promise<string> {
     const apiKey = this.config.apiKey;
     
     if (!apiKey || apiKey === 'your_openai_api_key_here') {
       throw new Error('OpenAI API key not configured');
     }
     
-    console.log('🤖 Making API call to OpenAI GPT-4o...');
+    console.log('🤖 Making API call to OpenAI GPT-5-mini...');
     
     const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
       method: 'POST',
@@ -206,7 +206,7 @@ Please provide a helpful, personalized response following the system instruction
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-5-mini',
         messages: [
           {
             role: 'system',
@@ -240,7 +240,7 @@ Please provide a helpful, personalized response following the system instruction
     }
 
     const data = await response.json();
-    console.log('🤖 OpenAI API Success:', data.choices[0]?.message?.content?.substring(0, 100) + '...');
+    console.log('🤖 OpenAI GPT-5-mini Success:', data.choices[0]?.message?.content?.substring(0, 100) + '...');
     return data.choices[0]?.message?.content || '';
   }
 

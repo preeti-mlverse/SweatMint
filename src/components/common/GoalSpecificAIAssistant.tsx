@@ -20,7 +20,7 @@ import { useCardioStore } from '../../store/useCardioStore';
         
         if (goalType === 'weight_loss' && weightLossProfile) {
           // Use specialized weight loss AI
-          console.log('🤖 Using specialized Weight Loss AI with GPT-4o');
+          console.log('🤖 Using specialized Weight Loss AI with GPT-5-mini');
           response = await weightLossAI.handleWeightLossQuery({
             userMessage: message,
             userProfile: {
