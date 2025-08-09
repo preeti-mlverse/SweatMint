@@ -7,6 +7,7 @@
  
  interface AuthWrapperProps {
    children: React.ReactNode;
+ }
 @@ .. @@
    if (loading) {
      return (
