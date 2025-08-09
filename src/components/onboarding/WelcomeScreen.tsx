@@ -2,10 +2,10 @@ import React from 'react';
 import { Target, Zap, Trophy, Users } from 'lucide-react';
 
 interface WelcomeScreenProps {
-  onContinue: () => void;
+  onGetStarted: () => void;
 }
 
-export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onContinue }) => {
+export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGetStarted }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0D1117] via-[#161B22] to-[#21262D] flex items-center justify-center p-4">
       <div className="max-w-md w-full text-center">
@@ -57,7 +57,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onContinue }) => {
 
         {/* CTA Button */}
         <button
-          onClick={onContinue}
+          onClick={onGetStarted}
           className="w-full bg-gradient-to-r from-[#F08A3E] to-[#E17226] text-white font-semibold py-4 px-6 rounded-2xl hover:from-[#E17226] to-[#D86B1F] transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
         >
           Get Started
