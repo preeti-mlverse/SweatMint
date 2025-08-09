@@ -18,7 +18,7 @@
 +            <Target className="w-8 h-8 text-white" />
 +          </div>
 +          <div className="w-8 h-8 border-2 border-[#F08A3E] border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-[#CBD5E1] mt-4">Loading Sweat Mint...</p>
+          <p className="text-[#CBD5E1] mt-4">Loading SweatMint...</p>
 +        </div>
        </div>
      );
