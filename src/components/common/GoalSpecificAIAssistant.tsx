@@ -1,77 +1,84 @@
-import { goalSpecificAI, isGoalAIReady } from '../../services/goalSpecificAI';
-import { weightLossAI, isWeightLossAIReady } from '../../services/weightLossAI';
+import { GoalType } from '../../types';
+import { conversationalAgent, chatWithWeightLossCoach } from '../../services/conversationalAgent';
 import { useAppStore } from '../../store/useAppStore';
 import { useWeightLossStore } from '../../store/useWeightLossStore';
 import { useCardioStore } from '../../store/useCardioStore';
 
   useEffect(() => {
-    setAiConfigured(isGoalAIReady());
-    // For weight loss, check the specialized AI
-    if (goalType === 'weight_loss') {
-      setAiConfigured(isWeightLossAIReady());
-    }
+    setAgentReady(conversationalAgent.isReady());
     initializeConversation();
   }, [goalType]);
 
     // Get AI response
     setTimeout(async () => {
       try {
-        let response;
+        const userId = userProfile?.id || 'anonymous';
+        console.log('🤖 Starting AI chat with user:', userId);
         
         if (goalType === 'weight_loss' && weightLossProfile) {
-          // Use specialized weight loss AI
-          console.log('🤖 Using specialized Weight Loss AI with GPT-4o');
-          console.log('🤖 Weight loss profile:', {
-            currentWeight: weightLossProfile.currentWeight,
-            targetWeight: weightLossProfile.targetWeight,
-            dailyCalorieTarget: weightLossProfile.dailyCalorieTarget
-          });
-          console.log('🤖 Today data:', {
-            totalCalories: getTodayCalories(),
-            remainingCalories: weightLossProfile.dailyCalorieTarget - getTodayCalories(),
-            mealsCount: getTodayMeals().length
-          });
+          console.log('🤖 Using conversational agent for weight loss coaching');
           
-          response = await weightLossAI.handleWeightLossQuery({
-            userMessage: message,
-            userProfile: {
-              currentWeight: weightLossProfile.currentWeight,
-              targetWeight: weightLossProfile.targetWeight,
-              dailyCalorieTarget: weightLossProfile.dailyCalorieTarget,
-              proteinGoalGrams: weightLossProfile.proteinGoalGrams,
-              dietaryPreferences: weightLossProfile.dietaryPreferences,
-              gender: weightLossProfile.gender,
-              activityLevel: weightLossProfile.activityLevel
-            },
-            todayData: {
+          const response = await chatWithWeightLossCoach(
+            userId,
+            message,
+            weightLossProfile,
+            {
               totalCalories: getTodayCalories(),
               remainingCalories: weightLossProfile.dailyCalorieTarget - getTodayCalories(),
               mealsLogged: getTodayMeals(),
-              exerciseCalories: 0, // Would get from exercise logs
-              waterIntake: 0 // Would get from water tracking
-            },
-            conversationHistory: messages.map(m => ({
-              role: m.role,
-              content: m.content
-            }))
+              exerciseCalories: 0,
+              waterIntake: 0
+            }
+          );
+          
+          console.log('🤖 Conversational agent response received:', {
+            hasMessage: !!response.message,
+            messageLength: response.message?.length,
+            hasActionSuggestions: !!response.actionSuggestions,
+            hasTip: !!response.motivationalTip,
+            confidence: response.confidence
           });
-        } else {
-          console.log('🤖 Using general goal-specific AI for:', goalType);
-          // Use general goal-specific AI for other goals
-          response = await goalSpecificAI.handleGoalSpecificQuery({
-            goalType,
-            userMessage: message,
-            profile: getProfile(),
-            todayData: getTodayData(),
-            conversationHistory: messages.map(m => ({
-              role: m.role,
-              content: m.content
-            }))
-          });
-        }
+          
+          const aiResponse: Message = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: response.message,
+            timestamp: new Date(),
+            actionSuggestions: response.actionSuggestions,
+            motivationalTip: response.motivationalTip
+          };
 
-        const aiResponse: Message = {
+          setMessages(prev => [...prev, aiResponse]);
+        } else {
+          // For other goals, use simple fallback for now
+          console.log('🤖 Using fallback for goal type:', goalType);
+          const fallbackResponse = {
+            message: `I'm here to help with your ${goalType.replace('_', ' ')} goals! How can I assist you today?`,
+            actionSuggestions: ["Get started", "Check progress", "Need motivation"],
+            motivationalTip: "Every step forward is progress!"
+          };
+
+          const aiResponse: Message = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: fallbackResponse.message,
+            timestamp: new Date(),
+            actionSuggestions: fallbackResponse.actionSuggestions,
+            motivationalTip: fallbackResponse.motivationalTip
+          };
+
+          setMessages(prev => [...prev, aiResponse]);
         }
+        
+      } catch (error) {
+        console.error('🚨 Conversational agent failed:', error);
+        const errorResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: "I'm having trouble connecting right now, but I'm still here to help! What would you like to know about your weight loss goals?",
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, errorResponse]);
       }
     }
     )
