@@ -52,9 +52,11 @@ export class WeightLossAI {
       this.config.apiKey.length > 20);
     
     if (this.isConfigured) {
-      console.log('✅ OpenAI GPT-4o configured for weight management');
+      console.log('✅ WeightLossAI: OpenAI GPT-4o configured successfully');
+      console.log('🔑 WeightLossAI: API key length:', this.config.apiKey.length);
     } else {
-      console.warn('⚠️ OpenAI API key not found - using fallback responses');
+      console.warn('⚠️ WeightLossAI: OpenAI API key not found or invalid - using fallback responses');
+      console.log('🔑 WeightLossAI: API key value:', this.config.apiKey?.substring(0, 10) + '...');
     }
   }
 
@@ -69,14 +71,19 @@ export class WeightLossAI {
 
   async handleWeightLossQuery(request: WeightLossRequest): Promise<WeightLossAIResponse> {
     if (!this.isReady()) {
+      console.log('🤖 WeightLossAI: API key not configured, using fallback');
       return this.getFallbackResponse(request);
     }
+
+    console.log('🤖 WeightLossAI: Using GPT-4o for query:', request.userMessage);
 
     try {
       const systemPrompt = this.getSystemPrompt();
       const userPrompt = this.createUserPrompt(request);
       
+      console.log('🤖 WeightLossAI: Calling GPT-4o...');
       const response = await this.callGPT4o(systemPrompt, userPrompt);
+      console.log('🤖 WeightLossAI: GPT-4o response received');
       return this.parseResponse(response);
     } catch (error) {
       console.error('Weight Loss AI failed:', error);
@@ -190,6 +197,8 @@ Please provide a helpful, personalized response following the system instruction
       throw new Error('OpenAI API key not configured');
     }
     
+    console.log('🤖 Making API call to OpenAI GPT-4o...');
+    
     const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -215,6 +224,7 @@ Please provide a helpful, personalized response following the system instruction
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('🤖 OpenAI API Error:', response.status, errorText);
       let errorMessage = `OpenAI API call failed (${response.status}): ${response.statusText}`;
       
       try {
@@ -230,6 +240,7 @@ Please provide a helpful, personalized response following the system instruction
     }
 
     const data = await response.json();
+    console.log('🤖 OpenAI API Success:', data.choices[0]?.message?.content?.substring(0, 100) + '...');
     return data.choices[0]?.message?.content || '';
   }
 
