@@ -2,7 +2,6 @@
    const handleMealLogged = (meal: MealLog) => {
      console.log('📝 TodayTab: Handling meal log:', meal);
      
-     // Add to weight loss store
      const { addMealLog } = useWeightLossStore.getState();
      addMealLog(meal);
      

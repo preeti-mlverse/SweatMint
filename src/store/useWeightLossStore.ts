@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-+import { persist } from 'zustand/middleware';
-+import { WeightLossGoal, WeightLossProfile, MealLog, ExerciseLog, WeightEntry, AIConversation } from '../types/weightLoss';
-+
-+interface WeightLossState {
+import { persist } from 'zustand/middleware';
+import { WeightLossGoal, WeightLossProfile, MealLog, ExerciseLog, WeightEntry, AIConversation } from '../types/weightLoss';
+
+interface WeightLossState {
 +  // Profile and goal
 +  goal: WeightLossGoal | null;
 +  profile: WeightLossProfile | null;
