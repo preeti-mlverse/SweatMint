@@ -60,6 +60,10 @@ import { useCardioStore } from '../../store/useCardioStore';
         }
 
         const aiResponse: Message = {
+        }
+      }
+    }
+    )
 
   function getInputPlaceholder() {
     const placeholders = {
@@ -67,3 +71,5 @@ import { useCardioStore } from '../../store/useCardioStore';
       cardio_endurance: "Ask about heart rate, workouts, or endurance...",
       strength_building: "Ask about lifting, exercises, or strength...",
       daily_steps: "Ask about walking, steps, or movement...",
+    }
+  }
