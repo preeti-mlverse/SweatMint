@@ -62,9 +62,11 @@ function App() {
 
   return (
     <AuthWrapper>
+    <AuthWrapper>
       <div className="App">
         {renderCurrentScreen()}
       </div>
+    </AuthWrapper>
     </AuthWrapper>
   );
 }
